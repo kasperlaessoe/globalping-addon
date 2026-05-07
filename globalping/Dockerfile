@@ -8,7 +8,7 @@ ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
 # install glibc Node binaries on Alpine, so we provide a Node 22 musl
 # build directly from the official node:22-alpine image instead.
 # hadolint ignore=DL3007
-FROM node:22-alpine AS node22
+FROM node:22.16.0-alpine AS node22
 
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
@@ -40,6 +40,7 @@ RUN apk add --no-cache \
         tar \
         tini \
         traceroute \
+        util-linux \
         util-linux-misc \
     && update-ca-certificates \
     && ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
