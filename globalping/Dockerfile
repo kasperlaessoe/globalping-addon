@@ -1,3 +1,8 @@
+# BUILD_FROM is supplied by the Home Assistant supervisor at build time
+# and selects the per-arch base image. Declared at the top so it is a
+# global ARG visible to every FROM stage.
+ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
+
 # Globalping probe pins itself to a specific Node major (currently 22.x)
 # and tries to self-update Node via nvm if it doesn't match. nvm can't
 # install glibc Node binaries on Alpine, so we provide a Node 22 musl
@@ -5,7 +10,6 @@
 # hadolint ignore=DL3007
 FROM node:22-alpine AS node22
 
-ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
