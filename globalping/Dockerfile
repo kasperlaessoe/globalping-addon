@@ -3,19 +3,16 @@
 # global ARG visible to every FROM stage.
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
 
-# Globalping probe pins itself to a specific Node major (currently 22.x)
-# and tries to self-update Node via nvm if it doesn't match. nvm can't
-# install glibc Node binaries on Alpine, so we provide a Node 22 musl
-# build directly from the official node:22-alpine image instead.
-# hadolint ignore=DL3007
-FROM node:22.16.0-alpine AS node22
-
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
 
-# Copy Node 22 (musl) from the official node image.
-COPY --from=node22 /usr/local/bin/node /usr/local/bin/node
-COPY --from=node22 /usr/local/lib/node_modules /usr/local/lib/node_modules
+# Globalping probe pins itself to an exact Node version (currently
+# v22.16.0) and tries to nvm-install that version on startup if it does
+# not match. nvm fetches from nodejs.org/dist which does not host musl
+# builds, so we install Node from unofficial-builds.nodejs.org at build
+# time instead. This guarantees process.version === wanted version and
+# disables the noisy self-update path entirely.
+ARG NODE_VERSION=22.16.0
 
 # Copy root filesystem
 COPY rootfs /
@@ -23,7 +20,7 @@ COPY rootfs /
 # Install runtime dependencies for the Globalping probe.
 # - coreutils replaces BusyBox df/du so the probe's `df --block-size=MB`
 #   call works.
-# - util-linux-misc provides lscpu, which the probe also calls.
+# - util-linux / util-linux-misc provide lscpu.
 # - libstdc++ is required by Node native modules (e.g. better-sqlite3).
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
@@ -42,10 +39,25 @@ RUN apk add --no-cache \
         traceroute \
         util-linux \
         util-linux-misc \
-    && update-ca-certificates \
-    && ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
-    && ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
-    && chmod +x /etc/globalping/entrypoint.sh
+        xz \
+    && update-ca-certificates
+
+# Install Node.js (musl) at the exact pinned version.
+# hadolint ignore=DL3018
+RUN set -eux; \
+    arch="$(uname -m)"; \
+    case "${arch}" in \
+        x86_64) node_arch=x64 ;; \
+        aarch64) node_arch=arm64 ;; \
+        *) echo "unsupported arch: ${arch}"; exit 1 ;; \
+    esac; \
+    url="https://unofficial-builds.nodejs.org/download/release/v${NODE_VERSION}/node-v${NODE_VERSION}-linux-${node_arch}-musl.tar.xz"; \
+    curl -fsSL "${url}" -o /tmp/node.tar.xz; \
+    tar -xJf /tmp/node.tar.xz -C /usr/local --strip-components=1 \
+        --exclude='*/CHANGELOG.md' --exclude='*/LICENSE' --exclude='*/README.md'; \
+    rm -f /tmp/node.tar.xz; \
+    node --version; \
+    chmod +x /etc/globalping/entrypoint.sh
 
 # Build arguments
 ARG BUILD_ARCH

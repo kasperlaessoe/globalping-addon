@@ -24,20 +24,18 @@ try_update() {
 
     echo "Checking for the latest probe version..."
 
-    response=$(curl --max-time 40 --retry 3 --retry-max-time 120 \
-        --retry-all-errors -XGET -Lf -sS \
-        "https://data.jsdelivr.com/v1/packages/gh/jsdelivr/globalping-probe/resolved")
-
-    if [ $? -eq 0 ] && [ -n "$response" ]; then
+    if response=$(curl --max-time 40 --retry 3 --retry-max-time 120 \
+            --retry-all-errors -XGET -Lf -sS \
+            "https://data.jsdelivr.com/v1/packages/gh/jsdelivr/globalping-probe/resolved") \
+        && [ -n "$response" ]; then
         echo "Probe version successfully fetched from jsDelivr API."
         latestVersion=$(jq -r ".version" <<<"${response}" | sed 's/v//')
     else
         echo "Failed to fetch the version info from jsDelivr API. Trying GitHub API..."
-        response=$(curl --max-time 40 --retry 3 --retry-max-time 120 \
-            --retry-all-errors -XGET -Lf -sS \
-            "https://api.github.com/repos/jsdelivr/globalping-probe/releases/latest")
-
-        if [ $? -eq 0 ] && [ -n "$response" ]; then
+        if response=$(curl --max-time 40 --retry 3 --retry-max-time 120 \
+                --retry-all-errors -XGET -Lf -sS \
+                "https://api.github.com/repos/jsdelivr/globalping-probe/releases/latest") \
+            && [ -n "$response" ]; then
             echo "Probe version successfully fetched from GitHub API."
             latestVersion=$(jq -r ".tag_name" <<<"${response}" | sed 's/v//')
         else
