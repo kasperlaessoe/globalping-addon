@@ -16,4 +16,6 @@ else
     bashio::log.notice "No adoption token configured; running unadopted."
 fi
 
-exec /sbin/tini -- /bin/bash /etc/globalping/entrypoint.sh
+export TINI_SUBREAPER=1
+cd /app || exit 1
+exec /sbin/tini -s -- /bin/bash /etc/globalping/entrypoint.sh

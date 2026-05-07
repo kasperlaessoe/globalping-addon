@@ -1,29 +1,45 @@
+# Globalping probe pins itself to a specific Node major (currently 22.x)
+# and tries to self-update Node via nvm if it doesn't match. nvm can't
+# install glibc Node binaries on Alpine, so we provide a Node 22 musl
+# build directly from the official node:22-alpine image instead.
+# hadolint ignore=DL3007
+FROM node:22-alpine AS node22
+
 ARG BUILD_FROM=ghcr.io/hassio-addons/base:20.1.1
 # hadolint ignore=DL3006
 FROM ${BUILD_FROM}
+
+# Copy Node 22 (musl) from the official node image.
+COPY --from=node22 /usr/local/bin/node /usr/local/bin/node
+COPY --from=node22 /usr/local/lib/node_modules /usr/local/lib/node_modules
 
 # Copy root filesystem
 COPY rootfs /
 
 # Install runtime dependencies for the Globalping probe.
-# The probe self-updates on first start by downloading the latest bundle
-# from jsDelivr / GitHub, so we only need the runtime tools here.
+# - coreutils replaces BusyBox df/du so the probe's `df --block-size=MB`
+#   call works.
+# - util-linux-misc provides lscpu, which the probe also calls.
+# - libstdc++ is required by Node native modules (e.g. better-sqlite3).
 # hadolint ignore=DL3018
 RUN apk add --no-cache \
         bash \
         bind-tools \
         ca-certificates \
+        coreutils \
         curl \
         expect \
         iputils \
         jq \
+        libstdc++ \
         mtr \
-        nodejs \
-        npm \
         tar \
         tini \
         traceroute \
+        util-linux-misc \
     && update-ca-certificates \
+    && ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx \
     && chmod +x /etc/globalping/entrypoint.sh
 
 # Build arguments

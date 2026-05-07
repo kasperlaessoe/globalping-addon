@@ -13,6 +13,8 @@ set -o pipefail
 update-ca-certificates >/dev/null 2>&1 || true
 
 run_probe() {
+    cd /app || exit 1
+    export NODE_CONFIG_DIR=/app/config
     exec node /app/dist/index.js
 }
 
