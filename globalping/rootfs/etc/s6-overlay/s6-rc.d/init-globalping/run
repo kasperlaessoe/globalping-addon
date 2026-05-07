@@ -1,0 +1,14 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Add-on: Globalping Probe
+# One-shot init: ensures /app exists for the upstream entrypoint and that
+# CA certificates are up to date before the probe starts.
+# ==============================================================================
+
+bashio::log.info "Preparing Globalping probe runtime..."
+
+mkdir -p /app
+update-ca-certificates >/dev/null 2>&1 || true
+
+bashio::log.info "Globalping probe runtime ready."

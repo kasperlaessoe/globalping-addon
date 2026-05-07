@@ -1,0 +1,34 @@
+# Home Assistant Add-on: Globalping Probe
+
+[![Release][release-shield]][release] ![Project Stage][project-stage-shield] ![Project Maintenance][maintenance-shield]
+
+Run a Globalping network probe on Home Assistant.
+
+## About
+
+This add-on packages the upstream [Globalping probe][probe] for use as a
+Home Assistant Supervisor add-on. Once running, your Home Assistant host
+joins the Globalping network and can answer measurement requests
+(`ping`, `traceroute`, `mtr`, `dns`, `http`) from its location.
+
+{% if channel == "edge" %}
+## WARNING! THIS IS AN EDGE VERSION!
+
+Edge builds are based on the latest development branch.
+
+- They may not work at all.
+- They might stop working at any time.
+- They could have a negative impact on your system.
+
+{% endif %}
+{% if channel == "beta" %}
+## WARNING! THIS IS A BETA VERSION!
+
+Beta builds may stop working at any time.
+
+{% endif %}
+[probe]: https://github.com/jsdelivr/globalping-probe
+[maintenance-shield]: https://img.shields.io/maintenance/yes/2026.svg
+[project-stage-shield]: https://img.shields.io/badge/project%20stage-alpha-yellow.svg
+[release-shield]: https://img.shields.io/badge/version-{{ version }}-blue.svg
+[release]: {{ repo }}/tree/{{ version }}

@@ -1,0 +1,19 @@
+#!/command/with-contenv bashio
+# shellcheck shell=bash
+# ==============================================================================
+# Home Assistant Add-on: Globalping Probe
+# Runs the Globalping probe via tini + the upstream entrypoint.
+# ==============================================================================
+
+bashio::log.info "Starting the Globalping probe..."
+
+# Pass the adoption token to the probe runtime if one is configured.
+if bashio::config.has_value 'adoption_token'; then
+    GP_ADOPTION_TOKEN=$(bashio::config 'adoption_token')
+    export GP_ADOPTION_TOKEN
+    bashio::log.info "Adoption token configured."
+else
+    bashio::log.notice "No adoption token configured; running unadopted."
+fi
+
+exec /sbin/tini -- /bin/bash /etc/globalping/entrypoint.sh

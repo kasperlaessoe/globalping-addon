@@ -1,0 +1,11 @@
+---
+configuration:
+  log_level:
+    name: Log level
+    description: The amount of logging the add-on should do.
+  adoption_token:
+    name: Adoption token
+    description: >-
+      Optional Globalping adoption token used to register this probe with
+      your account. Leave empty to run the probe unadopted. Get your token
+      from https://dash.globalping.io/probes?view=start-a-probe

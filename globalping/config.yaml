@@ -1,0 +1,21 @@
+---
+name: Globalping Probe
+version: dev
+slug: globalping
+description: Run a Globalping network probe on Home Assistant
+url: https://github.com/kasperlaessoe/globalping-addon
+init: false
+arch:
+  - aarch64
+  - amd64
+  - armv7
+host_network: true
+privileged:
+  - NET_ADMIN
+  - NET_RAW
+options:
+  log_level: info
+  adoption_token: ""
+schema:
+  log_level: list(trace|debug|info|notice|warning|error|fatal)
+  adoption_token: password?
